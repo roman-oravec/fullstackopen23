@@ -58,7 +58,6 @@ const App = () => {
     setBad(bad + 1)
   }
 
-  //let all = good + bad + neutral
   return (
     <div>
       <h2>Give feedback</h2>
