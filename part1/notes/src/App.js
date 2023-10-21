@@ -16,6 +16,20 @@ const Notification = ({ message }) => {
   )
 }
 
+const Footer = () => {
+  const footerStyle = {
+    color: 'green',
+    fontStyle: 'italic',
+    fontSize: '16'
+  }
+  return (
+    <div style={footerStyle}>
+      <br />
+      <em>Note app, done as part of the fullstackopen course, 2023</em>
+    </div>
+  )
+}
+
 const App = (props) => {
   const [notes, setNotes] = useState([])
   const [newNote, setNewNote] = useState('')
@@ -95,6 +109,7 @@ const App = (props) => {
         />
         <button type="submit">save</button>
       </form>
+      <Footer />
     </div>
   )
 }
