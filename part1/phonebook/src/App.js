@@ -40,9 +40,9 @@ const Persons = ({ persons, filter, handleDelete }) => {
   return (
     <div>
       {personsToShow.map(person =>
-        <Person 
-          key={person.id} 
-          name={person.name} 
+        <Person
+          key={person.id}
+          name={person.name}
           number={person.number}
           handleDelete={() => handleDelete(person.id)} />)
       }</div>)
@@ -75,26 +75,33 @@ const App = () => {
     // Check if the person is already there
     // by filtering all names that equal the new name
     if (persons.filter(n => n.name === newName).length > 0) {
-      alert(`${newName} is already in the phonebook`)
-      return
+      if (window.confirm(`${newName} is already in list. Wanna update his number to ${newNumber}?`)) {
+        const toBeUpdated = persons.find(p => p.name === newName)
+        phonebookService
+          .update(toBeUpdated.id, newPersonObj)
+          .then(returnedPerson => {
+            setPersons(persons.map(p => p.id !== toBeUpdated.id ? p : returnedPerson))
+          })
+      }
+    } else {
+      phonebookService
+        .create(newPersonObj)
+        .then(returnedPersons => {
+          setPersons(persons.concat(returnedPersons))
+          setNewName('')
+          setNewNumber('')
+        })
     }
-    phonebookService
-      .create(newPersonObj)
-      .then(returnedPersons => {
-        setPersons(persons.concat(returnedPersons))
-        setNewName('')
-        setNewNumber('')
-      })
   }
 
   const handleDelete = (id) => {
     const toBeDeleted = persons.find(p => p.id === id)
     if (window.confirm(`You really wanna delete ${toBeDeleted.name}?`))
-    phonebookService
-    .deletePerson(id)
-    .then(deletedPerson => {
-      setPersons(persons.filter(p => p.id !== id))
-    })
+      phonebookService
+        .deletePerson(id)
+        .then(deletedPerson => {
+          setPersons(persons.filter(p => p.id !== id))
+        })
   }
 
   const handleNameChange = (event) => {
@@ -118,7 +125,7 @@ const App = () => {
       <h3>New contact</h3>
       <PersonForm handleSubmit={handleSubmit} newName={newName} handleNameChange={handleNameChange} newNumber={newNumber} handleNumberChange={handleNumberChange} />
       <h2>Numbers</h2>
-      <Persons persons={persons} filter={filter} handleDelete={handleDelete}/>
+      <Persons persons={persons} filter={filter} handleDelete={handleDelete} />
     </div>
   )
 }
