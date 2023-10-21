@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 
+import phonebookService from './services/phonebook'
+
 const Person = (props) => {
   return (
-    <div>{props.name} {props.number}</div>
+    <div>{props.name} {props.number} <button onClick={props.handleDelete}>delete</button></div>
   )
 }
 
@@ -31,14 +33,18 @@ const FilterByName = (props) => {
   )
 }
 
-const Persons = ({ persons, filter }) => {
+const Persons = ({ persons, filter, handleDelete }) => {
   const personsToShow = filter.length > 0 ?
     persons.filter(person => person.name.toLowerCase().includes(filter.toLowerCase())) :
     persons
   return (
     <div>
       {personsToShow.map(person =>
-        <Person key={person.name} name={person.name} number={person.number} />)
+        <Person 
+          key={person.id} 
+          name={person.name} 
+          number={person.number}
+          handleDelete={() => handleDelete(person.id)} />)
       }</div>)
 }
 
@@ -72,9 +78,23 @@ const App = () => {
       alert(`${newName} is already in the phonebook`)
       return
     }
-    setPersons(persons.concat(newPersonObj))
-    setNewName('')
-    setNewNumber('')
+    phonebookService
+      .create(newPersonObj)
+      .then(returnedPersons => {
+        setPersons(persons.concat(returnedPersons))
+        setNewName('')
+        setNewNumber('')
+      })
+  }
+
+  const handleDelete = (id) => {
+    const toBeDeleted = persons.find(p => p.id === id)
+    if (window.confirm(`You really wanna delete ${toBeDeleted.name}?`))
+    phonebookService
+    .deletePerson(id)
+    .then(deletedPerson => {
+      setPersons(persons.filter(p => p.id !== id))
+    })
   }
 
   const handleNameChange = (event) => {
@@ -98,7 +118,7 @@ const App = () => {
       <h3>New contact</h3>
       <PersonForm handleSubmit={handleSubmit} newName={newName} handleNameChange={handleNameChange} newNumber={newNumber} handleNumberChange={handleNumberChange} />
       <h2>Numbers</h2>
-      <Persons persons={persons} filter={filter} />
+      <Persons persons={persons} filter={filter} handleDelete={handleDelete}/>
     </div>
   )
 }
