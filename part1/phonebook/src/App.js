@@ -48,12 +48,26 @@ const Persons = ({ persons, filter, handleDelete }) => {
       }</div>)
 }
 
+const Notification = ({ message, notificationClass }) => {
+  if (message === null) {
+    return null
+  }
+
+  return (
+    <div className={notificationClass}>
+      {message}
+    </div>
+  )
+}
+
 
 const App = () => {
   const [persons, setPersons] = useState([])
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [filter, setFilter] = useState('')
+  const [notification, setNotification] = useState(null)
+  const [notificationClass, setNotificationClass] = useState('notification')
 
   useEffect(() => {
     axios
@@ -82,6 +96,9 @@ const App = () => {
           .then(returnedPerson => {
             setPersons(persons.map(p => p.id !== toBeUpdated.id ? p : returnedPerson))
           })
+        setNotificationClass('notification')
+        setNotification(`${newName} updated.`)
+        setTimeout(() => { setNotification(null) }, 5000)
       }
     } else {
       phonebookService
@@ -91,6 +108,9 @@ const App = () => {
           setNewName('')
           setNewNumber('')
         })
+      setNotificationClass('notification')
+      setNotification(`${newName} added.`)
+      setTimeout(() => { setNotification(null) }, 5000)
     }
   }
 
@@ -102,6 +122,14 @@ const App = () => {
         .then(deletedPerson => {
           setPersons(persons.filter(p => p.id !== id))
         })
+        .catch(error => {
+          setNotificationClass('error')
+          setNotification(`${toBeDeleted.name} was already removed from the server`)
+          setTimeout(() => { setNotification(null) }, 5000)
+          setPersons(persons.filter(p => p.id !== id))
+        }
+
+        )
   }
 
   const handleNameChange = (event) => {
@@ -121,6 +149,7 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification message={notification} notificationClass={notificationClass}/>
       <FilterByName filter={filter} handleFilter={handleFilter} />
       <h3>New contact</h3>
       <PersonForm handleSubmit={handleSubmit} newName={newName} handleNameChange={handleNameChange} newNumber={newNumber} handleNumberChange={handleNumberChange} />
